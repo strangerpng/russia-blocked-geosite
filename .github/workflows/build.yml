@@ -148,17 +148,23 @@ jobs:
           mkdir -p ./community/data-ru
           cp ./community/data/{category-ads-all,private,ru-available-only-inside,category-gov-ru,ru-blocked-all} ./community/data-ru/
           
-      - name: Build geosite.dat file
+      - name: Build geosite.dat files
         run: |
           cd custom || exit 1
           go run ./ --exportlists= --datname=geosite-ru-only.dat --togfwlist=ru-blocked-all --datapath=../community/data-ru
           go run ./ --exportlists=category-ads-all,google,youtube,discord,ru-blocked-all,private --datapath=../community/data
+          rm ../community/data/ru-blocked-all
+          rm -rf ../community/data-ru
+          go run ./ --exportlists=category-ads-all,google,youtube,discord,private --datname=geosite-no-ru.dat --datapath=../community/data
 
       - name: Move and generate sha256 hash
         run: |
           mkdir -p ./publish
           install -Dp ./custom/publish/geosite.dat ./publish/geosite.dat
           sha256sum ./publish/geosite.dat > ./publish/geosite.dat.sha256sum
+
+          install -Dp ./custom/publish/geosite-no-ru.dat ./publish/geosite-no-ru.dat
+          sha256sum ./publish/geosite-no-ru.dat > ./publish/geosite-no-ru.dat.sha256sum
 
       - name: Release and upload assets
         uses: svenstaro/upload-release-action@v2
